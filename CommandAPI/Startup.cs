@@ -10,6 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.SqlServer;
+using Microsoft.Data.SqlClient;
 
 namespace CommandAPI {
     public class Startup {
@@ -22,10 +24,15 @@ namespace CommandAPI {
         }
 
         public void ConfigureServices(IServiceCollection services) {
-            services.AddControllers();
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+            builder.ConnectionString = Configuration.GetConnectionString("DefaultConnection");
+            builder.UserID = Configuration["UserID"];
+            builder.Password = Configuration["Password"];
             //services.AddScoped<ICommandAPIRepo, MockCommandAPIRepo>();
+            //services.AddDbContext<CommandContext>(opt => opt.UseSqlServer (Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<CommandContext>(opt => opt.UseSqlServer(builder.ConnectionString));
+            services.AddControllers();
             services.AddScoped<ICommandAPIRepo, SqlCommandAPIRepo>();
-            services.AddDbContext<CommandContext>(opt => opt.UseSqlServer (Configuration.GetConnectionString("DefaultConnection")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
