@@ -11,7 +11,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.SqlServer;
+using Newtonsoft.Json.Serialization;
 using Microsoft.Data.SqlClient;
+using AutoMapper;
 
 namespace CommandAPI {
     public class Startup {
@@ -28,10 +30,17 @@ namespace CommandAPI {
             builder.ConnectionString = Configuration.GetConnectionString("DefaultConnection");
             builder.UserID = Configuration["UserID"];
             builder.Password = Configuration["Password"];
+
             //services.AddScoped<ICommandAPIRepo, MockCommandAPIRepo>();
             //services.AddDbContext<CommandContext>(opt => opt.UseSqlServer (Configuration.GetConnectionString("DefaultConnection")));
+
             services.AddDbContext<CommandContext>(opt => opt.UseSqlServer(builder.ConnectionString));
+
+            services.AddControllers().AddNewtonsoftJson(s => {
+                s.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            });
             services.AddControllers();
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddScoped<ICommandAPIRepo, SqlCommandAPIRepo>();
         }
 
